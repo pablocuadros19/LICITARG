@@ -14,149 +14,24 @@ from services.analytics import (
 )
 from services.enrichment import consultar_uno
 from utils.formatters import formatear_monto, formatear_cuit
+from ui.theme import inject_css
+from ui.components import (
+    render_header,
+    render_sidebar_brand,
+    render_metric_card,
+    render_perrito_loader,
+    render_footer,
+)
 
 # ─── Configuración de página ────────────────────────────────────────────────
 st.set_page_config(
     page_title="LICITARG",
-    page_icon="🏛️",
+    page_icon="assets/logolic.png",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ─── Estilos Banco Provincia ─────────────────────────────────────────────────
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-
-*, body, .stApp { font-family: 'Montserrat', sans-serif !important; }
-
-/* Forzar carga de Material Icons para evitar que aparezca "keyboard_double_" como texto */
-.material-icons { font-family: 'Material Icons' !important; }
-
-/* Sidebar brand area */
-[data-testid="stSidebarHeader"] {
-    background: linear-gradient(135deg, #00A651, #00B8D4) !important;
-    padding: 0.8rem 1rem !important;
-}
-[data-testid="stSidebarHeader"] button,
-[data-testid="stSidebarHeader"] span {
-    color: white !important;
-}
-
-/* Header */
-.hero-header {
-    background: linear-gradient(90deg, #fff 0%, #00A651 25%, #00B8D4 100%);
-    padding: 1.5rem 2rem;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-}
-.hero-title {
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: #fff;
-    margin: 0;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.hero-sub {
-    font-size: 0.9rem;
-    color: rgba(255,255,255,0.9);
-    letter-spacing: 2px;
-    margin: 0.3rem 0 0 0;
-    font-weight: 400;
-}
-
-/* Métricas */
-.metric-card {
-    background: #f7f9fc;
-    border: 1px solid #e0e5ec;
-    border-radius: 10px;
-    padding: 1rem 1.2rem;
-    text-align: center;
-}
-.metric-val {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #00A651;
-    margin: 0;
-}
-.metric-lbl {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #555;
-    margin: 0.2rem 0 0 0;
-}
-
-/* Prospecto card */
-.prosp-card {
-    background: #f7f9fc;
-    border: 1px solid #e0e5ec;
-    border-radius: 14px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 0.7rem;
-    transition: border-color 0.2s;
-}
-.prosp-card:hover {
-    border-color: #00A651;
-    box-shadow: 0 2px 10px rgba(0,132,61,0.1);
-}
-.prosp-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin: 0 0 0.3rem 0;
-}
-.prosp-cuit {
-    font-size: 0.78rem;
-    color: #999;
-    font-family: monospace;
-}
-.prosp-monto {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #00A651;
-}
-.tag {
-    display: inline-block;
-    background: #e8f5ee;
-    color: #00A651;
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
-    margin: 0.15rem 0.1rem;
-}
-.tag-blue {
-    background: #e8f3ff;
-    color: #0078D4;
-}
-
-/* Situación BCRA */
-.sit-verde { color: #00A651; font-weight: 600; }
-.sit-amarillo { color: #F5A623; font-weight: 600; }
-.sit-rojo { color: #D0021B; font-weight: 600; }
-
-/* Sección destacada */
-.seccion-dest {
-    background: #f0f9f4;
-    border: 1px solid #c8e6d5;
-    border-left: 4px solid #00A651;
-    border-radius: 12px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 1rem;
-}
-
-/* Divider */
-.divider {
-    height: 3px;
-    background: linear-gradient(90deg, #00A651, #00B8D4);
-    border-radius: 2px;
-    margin: 1.2rem 0;
-}
-</style>
-""", unsafe_allow_html=True)
+inject_css()
 
 
 # ─── Cache de datos ───────────────────────────────────────────────────────────
@@ -171,16 +46,7 @@ def _cargar_datos():
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("""
-    <div style="background:linear-gradient(135deg,#00A651,#00B8D4);
-                padding:1rem 1.2rem;margin:-1rem -1rem 1rem -1rem;border-radius:0 0 12px 12px;">
-        <p style="font-family:Montserrat,sans-serif;font-size:1.3rem;font-weight:900;
-                  color:white;margin:0;letter-spacing:1px;">LICITARG</p>
-        <p style="font-family:Montserrat,sans-serif;font-size:0.65rem;font-weight:600;
-                  color:rgba(255,255,255,0.85);margin:0;letter-spacing:2px;text-transform:uppercase;">
-            Proveedores del Estado</p>
-    </div>
-    """, unsafe_allow_html=True)
+    render_sidebar_brand()
 
     sucursales_lista = list(SUCURSALES.keys())
     sucursal_sel = st.selectbox(
@@ -204,12 +70,12 @@ with st.sidebar:
 
     st.markdown("---")
     if st.button("Reprocesar datos", help="Descarga y re-procesa todos los datos fuente"):
-        with st.spinner("Procesando... (puede tardar 1-2 min)"):
-            _cargar_datos.clear()
-            from services.data_processor import procesar_todo
-            procesar_todo()
-            st.success("Datos actualizados.")
-            st.rerun()
+        render_perrito_loader("Olfateando proveedores...")
+        _cargar_datos.clear()
+        from services.data_processor import procesar_todo
+        procesar_todo()
+        st.success("Datos actualizados.")
+        st.rerun()
 
 
 # ─── Carga de datos ───────────────────────────────────────────────────────────
@@ -223,12 +89,7 @@ if df_prov is None:
     st.stop()
 
 # ─── Header ───────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="hero-header">
-    <p class="hero-title">LICITARG</p>
-    <p class="hero-sub">PROVEEDORES DEL ESTADO • PROSPECCIÓN COMERCIAL</p>
-</div>
-""", unsafe_allow_html=True)
+render_header()
 
 # ─── Métricas globales ────────────────────────────────────────────────────────
 resumen = resumen_global(df_prov)
@@ -236,22 +97,11 @@ rsuc = resumen_sucursal(sucursal_sel, df_prov)
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
-metricas = [
-    (col1, str(resumen["total_proveedores"]), "Total proveedores"),
-    (col2, str(resumen["con_sucursal"]), "Con zona asignada"),
-    (col3, str(rsuc["total_prospectos"]), f"Prospectos {sucursal_sel}"),
-    (col4, formatear_monto(rsuc["monto_total"]), f"Monto adjud. {sucursal_sel}"),
-    (col5, formatear_monto(resumen["monto_total"]), "Monto total dataset"),
-]
-
-for col, val, lbl in metricas:
-    with col:
-        st.markdown(f"""
-        <div class="metric-card">
-            <p class="metric-val">{val}</p>
-            <p class="metric-lbl">{lbl}</p>
-        </div>
-        """, unsafe_allow_html=True)
+render_metric_card(str(resumen["total_proveedores"]), "Total proveedores", col1)
+render_metric_card(str(resumen["con_sucursal"]), "Con zona asignada", col2)
+render_metric_card(str(rsuc["total_prospectos"]), f"Prospectos {sucursal_sel}", col3)
+render_metric_card(formatear_monto(rsuc["monto_total"]), f"Monto adjud. {sucursal_sel}", col4)
+render_metric_card(formatear_monto(resumen["monto_total"]), "Monto total dataset", col5)
 
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
@@ -273,7 +123,6 @@ else:
 if df_filtrado.empty:
     st.info("Sin prospectos para los filtros seleccionados.")
 else:
-    # Preparar columnas para tabla
     df_tabla = df_filtrado.copy()
     df_tabla["CUIT"] = df_tabla["cuit"].apply(formatear_cuit)
     df_tabla["Razón Social"] = df_tabla["razon_social"].str.strip()
@@ -331,7 +180,6 @@ else:
                     if org.strip():
                         st.markdown(f'<span class="tag tag-blue">{org.strip()}</span>', unsafe_allow_html=True)
 
-            # Historial de adjudicaciones
             with st.expander("Ver historial de adjudicaciones"):
                 try:
                     df_adj_hist = adjudicaciones_proveedor(str(row["cuit"]))
@@ -352,18 +200,15 @@ else:
             bcra_key = f"bcra_{row['cuit']}"
             if bcra_key not in st.session_state:
                 if st.button("Consultar BCRA", key=f"btn_{row['cuit']}"):
-                    with st.spinner("Consultando..."):
-                        resultado = consultar_uno(str(row["cuit"]))
-                        st.session_state[bcra_key] = resultado
-                        st.rerun()
+                    render_perrito_loader("Consultando deudas...")
+                    resultado = consultar_uno(str(row["cuit"]))
+                    st.session_state[bcra_key] = resultado
+                    st.rerun()
             else:
                 resultado = st.session_state[bcra_key]
                 sit = resultado.get("situacion_max", -1)
 
-                if sit == 0:
-                    clase = "sit-verde"
-                    icono = "✅"
-                elif sit == 1:
+                if sit <= 1:
                     clase = "sit-verde"
                     icono = "✅"
                 elif sit == 2:
@@ -404,9 +249,4 @@ else:
                     st.rerun()
 
 # ─── Footer ───────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="divider"></div>
-<p style="text-align:center; font-size:0.72rem; color:#999;">
-    LICITARG v0.1 — Datos: COMPR.AR / CONTRAT.AR / SIPRO / BCRA — Solo uso interno
-</p>
-""", unsafe_allow_html=True)
+render_footer()
