@@ -27,8 +27,22 @@ st.set_page_config(
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 *, body, .stApp { font-family: 'Montserrat', sans-serif !important; }
+
+/* Forzar carga de Material Icons para evitar que aparezca "keyboard_double_" como texto */
+.material-icons { font-family: 'Material Icons' !important; }
+
+/* Sidebar brand area */
+[data-testid="stSidebarHeader"] {
+    background: linear-gradient(135deg, #00A651, #00B8D4) !important;
+    padding: 0.8rem 1rem !important;
+}
+[data-testid="stSidebarHeader"] button,
+[data-testid="stSidebarHeader"] span {
+    color: white !important;
+}
 
 /* Header */
 .hero-header {
@@ -157,8 +171,16 @@ def _cargar_datos():
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 🏛️ LICITARG")
-    st.markdown("---")
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#00A651,#00B8D4);
+                padding:1rem 1.2rem;margin:-1rem -1rem 1rem -1rem;border-radius:0 0 12px 12px;">
+        <p style="font-family:Montserrat,sans-serif;font-size:1.3rem;font-weight:900;
+                  color:white;margin:0;letter-spacing:1px;">LICITARG</p>
+        <p style="font-family:Montserrat,sans-serif;font-size:0.65rem;font-weight:600;
+                  color:rgba(255,255,255,0.85);margin:0;letter-spacing:2px;text-transform:uppercase;">
+            Proveedores del Estado</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     sucursales_lista = list(SUCURSALES.keys())
     sucursal_sel = st.selectbox(
