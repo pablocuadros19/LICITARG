@@ -129,9 +129,9 @@ else:
     df_tabla["Monto Total"] = df_tabla["monto_total"].apply(lambda x: formatear_monto(x))
     df_tabla["Adj."] = df_tabla["cantidad_adjudicaciones"].fillna(0).astype(int)
     df_tabla["Localidad"] = df_tabla["dom_fiscal_localidad"].fillna("").str.strip()
-    df_tabla["Rubros"] = df_tabla["rubros"].fillna("").str[:60]
+    df_tabla["Actividad"] = df_tabla["actividad_descripcion"].fillna("").str[:45]
 
-    cols_mostrar = ["CUIT", "Razón Social", "Monto Total", "Adj.", "Localidad", "Rubros"]
+    cols_mostrar = ["CUIT", "Razón Social", "Monto Total", "Adj.", "Localidad", "Actividad"]
     st.dataframe(
         df_tabla[cols_mostrar],
         use_container_width=True,
@@ -154,11 +154,14 @@ else:
         col_ficha, col_bcra = st.columns([3, 2])
 
         with col_ficha:
+            actividad_html = f'<p style="font-size:0.82rem; color:#00A651; margin:0.3rem 0 0 0;">🏭 {fila["actividad"]}</p>' if fila["actividad"] else ""
+            tipo_html = f'<span style="font-size:0.72rem; color:#888;">{fila["tipo_societario"]}</span>' if fila["tipo_societario"] else ""
             st.markdown(f"""
             <div class="seccion-dest">
-                <p class="prosp-name">{fila['razon_social']}</p>
+                <p class="prosp-name">{fila['razon_social']} {tipo_html}</p>
                 <p class="prosp-cuit">CUIT: {fila['cuit']}</p>
                 <p class="prosp-monto">{fila['monto_total']}</p>
+                {actividad_html}
                 <p style="font-size:0.82rem; color:#555; margin: 0.4rem 0 0.3rem 0;">
                     📍 {fila['domicilio']}
                 </p>
@@ -180,18 +183,22 @@ else:
                     if org.strip():
                         st.markdown(f'<span class="tag tag-blue">{org.strip()}</span>', unsafe_allow_html=True)
 
-            with st.expander("Ver historial de adjudicaciones"):
-                try:
-                    df_adj_hist = adjudicaciones_proveedor(str(row["cuit"]))
-                    if not df_adj_hist.empty:
-                        hist = df_adj_hist[["anio_fuente", "organismo", "monto", "rubros", "fuente"]].copy()
-                        hist["monto"] = hist["monto"].apply(lambda x: formatear_monto(x))
-                        hist.columns = ["Año", "Organismo", "Monto", "Rubros", "Fuente"]
-                        st.dataframe(hist, use_container_width=True, hide_index=True)
-                    else:
-                        st.info("Sin historial detallado.")
-                except Exception as e:
-                    st.warning(f"No se pudo cargar historial: {e}")
+            st.markdown("**Historial de adjudicaciones:**")
+            try:
+                df_adj_hist = adjudicaciones_proveedor(str(row["cuit"]))
+                if not df_adj_hist.empty:
+                    cols_hist = ["anio_fuente", "organismo", "monto", "tipo_procedimiento", "rubros", "fuente"]
+                    cols_hist = [c for c in cols_hist if c in df_adj_hist.columns]
+                    hist = df_adj_hist[cols_hist].copy()
+                    hist["monto"] = hist["monto"].apply(lambda x: formatear_monto(x))
+                    rename = {"anio_fuente": "Año", "organismo": "Organismo", "monto": "Monto",
+                              "tipo_procedimiento": "Tipo", "rubros": "Rubros", "fuente": "Fuente"}
+                    hist.columns = [rename.get(c, c) for c in hist.columns]
+                    st.dataframe(hist, use_container_width=True, hide_index=True, height=220)
+                else:
+                    st.caption("Sin historial detallado.")
+            except Exception as e:
+                st.warning(f"No se pudo cargar historial: {e}")
 
         with col_bcra:
             st.markdown("**Situación BCRA**")
@@ -208,7 +215,10 @@ else:
                 resultado = st.session_state[bcra_key]
                 sit = resultado.get("situacion_max", -1)
 
-                if sit <= 1:
+                if sit == -1:
+                    clase = "sit-rojo"
+                    icono = "⚠️"
+                elif sit <= 1:
                     clase = "sit-verde"
                     icono = "✅"
                 elif sit == 2:

@@ -119,4 +119,6 @@ def formatear_fila_prospecto(row: pd.Series) -> dict:
         "organismos": str(row.get("organismos", "")).strip()[:80],
         "sucursal": str(row.get("sucursal", "")),
         "fuentes": str(row.get("fuentes", "")),
+        "actividad": str(row.get("actividad_descripcion", "")).strip(),
+        "tipo_societario": str(row.get("tipo_societario", "")).strip(),
     }
